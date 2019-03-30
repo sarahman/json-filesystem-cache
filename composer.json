@@ -1,0 +1,29 @@
+{
+    "name": "sarahman/json-filesystem-cache",
+    "description": "JSON file system cache library for PHP built on top of PSR-16.",
+    "type": "utility",
+    "version": "1.0.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Syed Abidur Rahman",
+            "email": "aabid048@gmail.com"
+        }
+    ],
+
+    "require": {
+        "ext-json": "*",
+        "nahid/jsonq": "^5.2",
+        "psr/simple-cache": "*"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "Sarahman\\JSONCache\\": "src"
+        }
+    },
+
+    "provide": {
+        "psr/simple-cache-implementation": "1.0"
+    }
+}

@@ -1,6 +1,6 @@
 <?php
 
-namespace Sarahman\JSONCache;
+namespace Sarahman\SimpleCache;
 
 use Psr\SimpleCache\CacheInterface;
 
@@ -9,7 +9,7 @@ use Psr\SimpleCache\CacheInterface;
  *
  * JSON File System Cache using PSR simple cache interface implementation.
  *
- * @package    Sarahman\JSONCache
+ * @package    Sarahman\SimpleCache
  * @author     Syed Abidur Rahman <aabid048@gmail.com>
  * @copyright  2019 Syed Abidur Rahman
  * @license    https://opensource.org/licenses/mit-license.php MIT

@@ -1,11 +1,11 @@
 <?php
 
-namespace Sarahman\JSONCache;
+namespace Sarahman\SimpleCache;
 
 /**
  * Class Exception
  *
- * @package    Sarahman\JSONCache
+ * @package    Sarahman\SimpleCache
  * @author     Syed Abidur Rahman <aabid048@gmail.com>
  * @copyright  2019 Syed Abidur Rahman
  * @license    https://opensource.org/licenses/mit-license.php MIT

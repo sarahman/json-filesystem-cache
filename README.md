@@ -25,7 +25,7 @@ $ composer require sarahman/sarahman/json-filesystem-cache
 
 require "vendor/autoload.php";
 
-$cache = new Sarahman\JSONCache\JSONFileSystemCache(); // the custom cache directory can be set through the parameter.
+$cache = new Sarahman\SimpleCache\JSONFileSystemCache(); // the custom cache directory can be set through the parameter.
 
 // Set Cache key.
 $data = [

@@ -66,7 +66,7 @@ class JSONFileSystemCache implements CacheInterface
     }
 
     /**
-     * Store an item
+     * Stores an item
      *
      * @param string $key The key under which to store the value.
      * @param mixed $value The value to store.
@@ -79,15 +79,11 @@ class JSONFileSystemCache implements CacheInterface
         if (!$this->isKey($key)) return false;
 
         $this->cachedData[$key] = array('lifetime' => time() + $lifetime, 'data' => $value);
-        if (file_put_contents($this->cachedJsonFile, $this->cachedData) !== false) {
-            return true;
-        }
-
-        return false;
+        return $this->saveDataIntoFile();
     }
 
     /**
-     * sets a new expiration on an item
+     * Sets a new expiration on an item
      *
      * @param string $key The key under which to store the value.
      * @param integer $lifetime The expiration time, defaults to 3600
@@ -104,7 +100,7 @@ class JSONFileSystemCache implements CacheInterface
     }
 
     /**
-     * returns the item that was previously stored under the key
+     * Returns the item that was previously stored under the key
      *
      * @param string $key The key of the item to retrieve.
      * @param  mixed $default The default value (see @return)
@@ -125,13 +121,18 @@ class JSONFileSystemCache implements CacheInterface
     }
 
     /**
-     * Delete an item
+     * Deletes an item
+     *
      * @param string $key The key to be deleted.
      * @return boolean Returns TRUE on success or FALSE on failure
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function delete($key)
     {
+        if (!$this->isKey($key)) return false;
+
+        unset($this->cachedData[$key]);
+        return $this->saveDataIntoFile();
     }
 
     /**
@@ -141,6 +142,8 @@ class JSONFileSystemCache implements CacheInterface
      */
     public function clear()
     {
+        $this->cachedData = [];
+        return $this->saveDataIntoFile();
     }
 
     /**
@@ -157,6 +160,11 @@ class JSONFileSystemCache implements CacheInterface
      */
     public function getMultiple($keys, $default = null)
     {
+        $values = array();
+        foreach ($keys AS $key) {
+            $values[$key] = $this->get($key, $default);
+        }
+        return $values;
     }
 
     /**
@@ -175,6 +183,11 @@ class JSONFileSystemCache implements CacheInterface
      */
     public function setMultiple($values, $ttl = null)
     {
+        $return = false;
+        foreach ($values AS $key => $value) {
+            $return = $this->set($key, $value, $ttl) || $return;
+        }
+        return $return;
     }
 
     /**
@@ -190,6 +203,11 @@ class JSONFileSystemCache implements CacheInterface
      */
     public function deleteMultiple($keys)
     {
+        $return = false;
+        foreach ($keys AS $key) {
+            $values[$key] = $this->delete($key);
+        }
+        return $return;
     }
 
     /**
@@ -227,5 +245,16 @@ class JSONFileSystemCache implements CacheInterface
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode(), $exception);
         }
+    }
+
+    /**
+     * saves all the cached data into the cache json file.
+     *
+     * @return boolean Returns TRUE if valid key or FALSE otherwise
+     */
+    private function saveDataIntoFile()
+    {
+        $result = file_put_contents($this->cachedJsonFile, $this->cachedData);
+        return !empty($result);
     }
 }

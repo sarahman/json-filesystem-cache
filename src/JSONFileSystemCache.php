@@ -282,7 +282,7 @@ class JSONFileSystemCache implements CacheInterface
      */
     private function saveDataIntoFile()
     {
-        $result = file_put_contents($this->cachedJsonFile, $this->cachedData);
+        $result = file_put_contents($this->cachedJsonFile, json_encode($this->cachedData));
         return !empty($result);
     }
 }

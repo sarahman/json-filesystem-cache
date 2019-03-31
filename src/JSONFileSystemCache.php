@@ -71,15 +71,13 @@ class JSONFileSystemCache implements CacheInterface
      * @param string $key The key under which to store the value.
      * @param mixed $value The value to store.
      * @param integer $lifetime The expiration time, defaults to 3600
-     * @return boolean
+     * @return bool
      * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
      */
     public function set($key, $value, $lifetime = 3600)
     {
-        if (!$this->isKey($key)) return false;
-
-        $this->cachedData[$key] = array('lifetime' => time() + $lifetime, 'data' => $value);
-        return $this->saveDataIntoFile();
+        return $this->storeData($key, $value, $lifetime, true);
     }
 
     /**
@@ -87,8 +85,9 @@ class JSONFileSystemCache implements CacheInterface
      *
      * @param string $key The key under which to store the value.
      * @param integer $lifetime The expiration time, defaults to 3600
-     * @return boolean
+     * @return bool
      * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
      */
     public function touch($key, $lifetime = 3600)
     {
@@ -106,6 +105,7 @@ class JSONFileSystemCache implements CacheInterface
      * @param  mixed $default The default value (see @return)
      * @return mixed Returns the value stored in the cache or $default otherwise
      * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
      */
     public function get($key, $default = null)
     {
@@ -124,15 +124,13 @@ class JSONFileSystemCache implements CacheInterface
      * Deletes an item
      *
      * @param string $key The key to be deleted.
-     * @return boolean Returns TRUE on success or FALSE on failure
+     * @return bool Returns TRUE on success or FALSE on failure
      * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
      */
     public function delete($key)
     {
-        if (!$this->isKey($key)) return false;
-
-        unset($this->cachedData[$key]);
-        return $this->saveDataIntoFile();
+        return $this->removeData($key, true);
     }
 
     /**
@@ -155,8 +153,7 @@ class JSONFileSystemCache implements CacheInterface
      * @return iterable A list of key => value pairs. Cache keys that do not exist or are stale will have $default as value.
      *
      * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if $keys is neither an array nor a Traversable,
-     *   or if any of the $keys are not a legal value.
+     *   MUST be thrown if any of the $keys are not a legal value.
      */
     public function getMultiple($keys, $default = null)
     {
@@ -178,16 +175,14 @@ class JSONFileSystemCache implements CacheInterface
      * @return bool True on success and false on failure.
      *
      * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if $values is neither an array nor a Traversable,
-     *   or if any of the $values are not a legal value.
+     *   MUST be thrown if any of the $values are not a legal value.
      */
     public function setMultiple($values, $ttl = null)
     {
-        $return = false;
         foreach ($values AS $key => $value) {
-            $return = $this->set($key, $value, $ttl) || $return;
+            $this->storeData($key, $value, $ttl);
         }
-        return $return;
+        return $this->saveDataIntoFile();
     }
 
     /**
@@ -198,16 +193,14 @@ class JSONFileSystemCache implements CacheInterface
      * @return bool True if the items were successfully removed. False if there was an error.
      *
      * @throws \Psr\SimpleCache\InvalidArgumentException
-     *   MUST be thrown if $keys is neither an array nor a Traversable,
-     *   or if any of the $keys are not a legal value.
+     *   MUST be thrown if any of the $keys are not a legal value.
      */
     public function deleteMultiple($keys)
     {
-        $return = false;
         foreach ($keys AS $key) {
-            $values[$key] = $this->delete($key);
+            $this->removeData($key);
         }
-        return $return;
+        return $this->saveDataIntoFile();
     }
 
     /**
@@ -235,8 +228,9 @@ class JSONFileSystemCache implements CacheInterface
      * Check if $key is valid key name
      *
      * @param string $key The key to validate
-     * @return boolean Returns TRUE if valid key or FALSE otherwise
+     * @return bool Returns TRUE if valid key or FALSE otherwise
      * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
      */
     private function isKey($key)
     {
@@ -248,9 +242,45 @@ class JSONFileSystemCache implements CacheInterface
     }
 
     /**
-     * saves all the cached data into the cache json file.
+     * Stores an item into cache and also in the cache json file.
      *
-     * @return boolean Returns TRUE if valid key or FALSE otherwise
+     * @param string $key The key under which to store the value.
+     * @param mixed $value The value to store.
+     * @param integer $lifetime The expiration time, defaults to 3600
+     * @param bool $saveIntoFile
+     * @return bool
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
+     */
+    private function storeData($key, $value, $lifetime = 3600, $saveIntoFile = false)
+    {
+        if (!$this->isKey($key)) return false;
+
+        $this->cachedData[$key] = array('lifetime' => time() + $lifetime, 'data' => $value);
+        return empty($saveIntoFile) ? true : $this->saveDataIntoFile();
+    }
+
+    /**
+     * Removes an item from cache and also saves the cached data into the cache json file.
+     *
+     * @param string $key The key under which to store the value.
+     * @param bool $saveIntoFile
+     * @return bool
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *   MUST be thrown if the $key string is not a legal value.
+     */
+    private function removeData($key, $saveIntoFile = false)
+    {
+        if (!$this->isKey($key)) return false;
+
+        unset($this->cachedData[$key]);
+        return empty($saveIntoFile) ? true : $this->saveDataIntoFile();
+    }
+
+    /**
+     * Saves all the cached data into the cache json file.
+     *
+     * @return bool Returns TRUE if valid key or FALSE otherwise
      */
     private function saveDataIntoFile()
     {

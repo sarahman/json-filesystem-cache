@@ -61,4 +61,31 @@ class JsonFilesystemCacheTest extends \PHPUnit\Framework\TestCase
         $this->assertArrayHasKey('sample', $cache->get('your_custom_key'));
         $this->assertArrayHasKey('another', $cache->get('your_custom_key'));
     }
+
+    /**
+     * @test
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \Exception
+     */
+    public function it_checks_data_update_in_cache()
+    {
+        $cache = new JSONFileSystemCache();
+
+        // Set Cache key.
+        $cache->set('your_custom_key', [
+            'sample' => 'data',
+            'another' => 'data'
+        ]);
+
+        $this->assertTrue($cache->has('your_custom_key'));
+
+        // Get Cached key data.
+        $this->assertArrayHasKey('sample', $cache->get('your_custom_key'));
+        $this->assertArrayHasKey('another', $cache->get('your_custom_key'));
+
+        // Update Cache key data.
+        $cache->set('your_custom_key', 'new data');
+        $this->assertTrue($cache->has('your_custom_key'));
+        $this->assertEquals('new data', $cache->get('your_custom_key'));
+    }
 }

@@ -11,6 +11,26 @@ class JsonFilesystemCacheTest extends \PHPUnit\Framework\TestCase
      * @throws \Psr\SimpleCache\InvalidArgumentException
      * @throws \Exception
      */
+    public function it_checks_data_existence_in_cache()
+    {
+        $cache = new JSONFileSystemCache();
+        $cache->clear();
+
+        $this->assertFalse($cache->has('your_custom_key'));
+
+        $cache->set('your_custom_key', 'sample data');
+        $this->assertTrue($cache->has('your_custom_key'));
+
+        // Set Cache key.
+        $cache->delete('your_custom_key');
+        $this->assertFalse($cache->has('your_custom_key'));
+    }
+
+    /**
+     * @test
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \Exception
+     */
     public function it_checks_data_stored_in_temporary_files_directory()
     {
         $cache = new JSONFileSystemCache();
